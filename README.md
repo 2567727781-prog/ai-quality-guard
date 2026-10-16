@@ -121,4 +121,3 @@ DeepSeek 用于内容质量分析、问题识别和修改建议生成。
 
 **GitHub：** https://github.com/2567727781-prog/ai-quality-guard
 
-**其他交付材料：** 产品测试与验证报告、60–180 秒操作演示视频。
