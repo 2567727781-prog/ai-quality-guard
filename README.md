@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI 质量卫士（AI Quality Guard）
 
-## Getting Started
+面向金融运营场景的 AI 内容质量评测与合规边界治理工具。
 
-First, run the development server:
+**在线体验：** https://ai-quality-guard.vercel.app/
+
+## 1. 项目简介
+
+AI 质量卫士用于辅助金融运营人员审核营销文案，识别事实准确性、金融合规、投资者适当性和个人信息保护等风险。
+
+项目采用 **AI 质量评测 + 确定性规则拦截 + KYC 适当性校验 + 人工复核** 的组合方案。
+
+核心原则：**AI 评分不能覆盖金融合规红线，个性化推荐不能突破投资者适当性要求。**
+
+## 2. 核心功能
+
+| 功能 | 实现内容 |
+|---|---|
+| AI 自动评测 | 使用 DeepSeek 对输入文案进行结构化分析，输出评分、风险问题和修改建议 |
+| 五维质量评分 | 事实准确性、合规安全性、投资者适当性、内容清晰度、场景匹配度 |
+| 金融合规拦截 | 识别收益承诺、无风险宣传、直接荐股等高风险表述 |
+| KYC 适当性校验 | 对比用户 C1–C5 与产品 R1–R5 风险等级，识别不匹配情况 |
+| 隐私风险检测 | 识别未经授权收集或共享个人信息等风险 |
+| 事实核验 | 根据内置匿名模拟产品资料检查部分产品数据声明 |
+| 人工复核 | 提供人工处理与复核意见入口 |
+| 审核历史 | 展示审核结果、模型版本、Prompt 版本、数据版本及 Bad Case 归因 |
+
+## 3. 评测与决策机制
+
+系统通过五项指标评估内容质量，综合评分满分为 100 分。
+
+审核决策区分质量评分与合规约束：
+
+- **BLOCK：** 命中金融禁止性规则或 KYC 适当性强制拦截条件，禁止自动发布。
+- **REVIEW：** 进入人工复核，不代表已经获得合规批准。
+- **PASS：** 仅在满足相应审核条件时才可使用；当前演示流程不将 AI 高分直接视为发布许可。
+
+即使 AI 评分较高，只要触发硬性合规约束，仍执行拦截。
+
+## 4. 技术实现
+
+- 前端：Next.js、React、TypeScript、Tailwind CSS
+- AI 模型：DeepSeek Chat
+- 服务端：Next.js API Routes
+- 部署：Vercel
+- 规则模块：金融合规、KYC、隐私检测、模拟事实核验
+
+主要目录：
+
+```text
+app/
+  page.tsx
+  api/audit/route.ts
+lib/
+  compliance.ts
+  kyc.ts
+  privacy.ts
+  factCheck.ts
+```
+
+## 5. 本地运行
+
+要求：Node.js 和 npm。
+
+```bash
+npm install
+```
+
+在项目根目录创建 `.env.local`：
+
+```env
+DEEPSEEK_API_KEY=your_api_key_here
+```
+
+启动项目：
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+浏览器打开 http://localhost:3000。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+API Key 仅用于服务端调用，不应提交到公开仓库。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 6. 测试与验证
 
-## Learn More
+项目已针对以下场景开展测试：
 
-To learn more about Next.js, take a look at the following resources:
+| 测试场景 | 观察结果 |
+|---|---|
+| 正常营销文案 | 返回质量评分、风险分析及修改建议 |
+| 收益承诺、无风险宣传 | 命中金融合规规则，禁止自动发布 |
+| C2 用户匹配 R4 产品 | 即使 AI 评分为 85 分，仍触发适当性拦截 |
+| 个人信息未经授权共享 | 识别隐私风险并给出修改建议 |
+| 模拟产品收益数据冲突 | 命中 FACT-002 数据不一致提示 |
+| 空输入 | 审核按钮禁用 |
+| 浏览器断网 | 展示请求失败提示 |
+| 人工复核与反馈 | 提供复核意见和反馈操作入口 |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+具体测试输入、截图与分析见随项目提交的《产品测试与验证报告》。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 7. AI 使用与人工验证
 
-## Deploy on Vercel
+DeepSeek 用于内容质量分析、问题识别和修改建议生成。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+人工验证重点包括：检查规则是否正确命中、KYC 是否独立拦截、模型评分与审核结论是否分离，以及异常情况下是否给出合理提示。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+开发过程中使用的其他 AI 辅助工具及其实际用途，应在提交材料中据实补充，不将 AI 生成内容直接视为已验证结果。
+
+## 8. 数据来源与能力边界
+
+- 事实核验采用匿名模拟产品资料，不代表真实金融产品数据或实时市场行情。
+- AI 评分存在波动，不能替代人工合规审核。
+- 当前审核历史和反馈功能以演示流程为主，尚未形成完整的数据库持久化闭环。
+- 项目不执行真实证券交易，不提供实际投资建议，不实现自动发布。
+- 浏览器断网测试不等同于完整的服务端超时、限流和故障恢复测试。
+
+## 9. 交付地址
+
+**Web 演示：** https://ai-quality-guard.vercel.app/
+
+**GitHub：** https://github.com/2567727781-prog/ai-quality-guard
+
+**其他交付材料：** 产品测试与验证报告、60–180 秒操作演示视频。
